@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sweet Home Cakes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f0f4; min-height: 100vh; display: flex; justify-content: center; }
+  .app { width: 100%; max-width: 460px; background: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+
+  .top-bar { background: #c0392b; color: #fff; padding: 1.2rem 1.25rem 1rem; }
+  .top-bar h1 { font-size: 22px; font-weight: 600; margin: 0 0 2px; }
+  .top-bar p { font-size: 13px; opacity: 0.85; margin: 0; }
+
+  .screen { display: none; flex-direction: column; flex: 1; }
+  .screen.active { display: flex; }
+
+  /* ── MENU ── */
+  .cake-list { padding: 1rem; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .cake-item { background: #fff; border: 1.5px solid #eee; border-radius: 14px; padding: 0.9rem 1rem; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+  .cake-item:hover { border-color: #c0392b; }
+  .cake-item.selected { border-color: #c0392b; background: #fff5f5; }
+  .cake-icon { width: 50px; height: 50px; border-radius: 50%; background: #fff0f0; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .cake-details { flex: 1; }
+  .cake-name { font-size: 15px; font-weight: 600; color: #222; margin: 0 0 2px; }
+  .cake-desc { font-size: 12px; color: #888; margin: 0 0 4px; }
+  .cake-price { font-size: 14px; font-weight: 700; color: #c0392b; margin: 0; }
+  .check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; color: #fff; transition: all 0.15s; }
+  .check.on { background: #c0392b; border-color: #c0392b; }
+
+  /* ── FORM ── */
+  .back-btn { background: none; border: none; color: #c0392b; font-size: 14px; cursor: pointer; padding: 0.9rem 1.25rem 0.25rem; text-align: left; font-weight: 600; }
+  .form-section { padding: 0.5rem 1.25rem; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  .field-label { font-size: 12px; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  input, textarea { width: 100%; padding: 0.65rem 0.85rem; border: 1.5px solid #ddd; border-radius: 10px; font-size: 15px; font-family: inherit; color: #222; outline: none; transition: border-color 0.15s; background: #fff; }
+  input:focus, textarea:focus { border-color: #c0392b; }
+  textarea { resize: vertical; min-height: 72px; }
+  .selected-pill { background: #fff0f0; border: 1px solid #f5c6c6; border-radius: 20px; padding: 6px 14px; font-size: 13px; color: #a93226; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+  .qty-row { display: flex; align-items: center; gap: 16px; }
+  .qty-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #c0392b; background: none; color: #c0392b; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .qty-btn:hover { background: #c0392b; color: #fff; }
+  .qty-val { font-size: 20px; font-weight: 700; min-width: 28px; text-align: center; color: #222; }
+  .summary-card { margin: 0.5rem 1.25rem 0; background: #fafafa; border-radius: 12px; padding: 1rem; border: 1px solid #eee; }
+  .sum-row { display: flex; justify-content: space-between; font-size: 14px; color: #888; margin-bottom: 7px; }
+  .sum-row.total { font-size: 17px; font-weight: 700; color: #222; border-top: 1px dashed #ddd; padding-top: 9px; margin-top: 4px; }
+
+  /* ── PAYMENT ── */
+  .payment-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+  .pay-amount-box { background: #fff5f5; border: 1.5px solid #f5c6c6; border-radius: 14px; padding: 1.1rem 1.25rem; text-align: center; }
+  .pay-amount-box .label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .pay-amount-box .amount { font-size: 32px; font-weight: 700; color: #c0392b; }
+  .pay-amount-box .sublabel { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+  .qr-card { background: #fff; border: 1.5px solid #eee; border-radius: 16px; padding: 1.25rem; text-align: center; }
+  .qr-card .qr-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 12px; }
+  #qrcode { display: flex; justify-content: center; margin-bottom: 10px; }
+  #qrcode img, #qrcode canvas { border-radius: 8px; }
+  .upi-id-text { font-size: 12px; color: #888; margin-top: 4px; }
+
+  .phonepe-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #5f259f; color: #fff; border: none; border-radius: 14px; padding: 0.95rem; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; width: 100%; }
+  .phonepe-btn:hover { background: #4a1b7a; }
+  .phonepe-icon { font-size: 22px; }
+
+  .gpay-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #444; border: 1.5px solid #ddd; border-radius: 14px; padding: 0.95rem; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; width: 100%; }
+  .gpay-btn:hover { background: #f5f5f5; }
+
+  .divider { display: flex; align-items: center; gap: 10px; color: #bbb; font-size: 12px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #eee; }
+
+  .steps-box { background: #f9f9f9; border-radius: 12px; padding: 1rem 1.1rem; }
+  .steps-box .step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; font-size: 13px; color: #555; line-height: 1.4; }
+  .steps-box .step:last-child { margin-bottom: 0; }
+  .step-num { background: #c0392b; color: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  .paid-btn { margin: 0 1.25rem 1.25rem; padding: 0.9rem; border-radius: 12px; border: none; background: #27ae60; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+
+  /* ── SUCCESS ── */
+  .success-box { text-align: center; padding: 2.5rem 1.5rem; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .success-icon { width: 80px; height: 80px; border-radius: 50%; background: #eafaf1; margin: 0 auto 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+  .success-box h2 { font-size: 22px; font-weight: 700; color: #222; margin: 0 0 0.5rem; }
+  .success-box > p { font-size: 14px; color: #888; line-height: 1.6; margin: 0 0 1.2rem; }
+  .order-ref { background: #f5f5f5; border-radius: 8px; padding: 7px 16px; font-size: 13px; color: #666; margin-bottom: 1.2rem; font-weight: 600; letter-spacing: 1px; }
+  .conf-card { background: #fff5f5; border: 1px solid #f5c6c6; border-radius: 12px; padding: 1rem 1.25rem; text-align: left; width: 100%; margin-bottom: 1.5rem; font-size: 14px; color: #555; line-height: 1.9; }
+  .new-order-btn { border: 2px solid #c0392b; color: #c0392b; background: none; border-radius: 12px; padding: 0.75rem 2rem; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .new-order-btn:hover { background: #c0392b; color: #fff; }
+
+  /* ── SHARED ── */
+  .footer-btn { margin: 1rem; padding: 0.9rem; border-radius: 12px; border: none; background: #c0392b; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+  .footer-btn:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SCREEN 1: MENU -->
+  <div class="screen active" id="screen-menu">
+    <div class="top-bar">
+      <h1>🎂 Sweet Home Cakes</h1>
+      <p>Fresh baked with love — order now!</p>
+    </div>
+    <div class="cake-list" id="cake-list"></div>
+    <button class="footer-btn" id="btn-next-1" disabled onclick="goTo('screen-details')">Continue →</button>
+  </div>
+
+  <!-- SCREEN 2: ORDER DETAILS -->
+  <div class="screen" id="screen-details">
+    <div class="top-bar">
+      <h1>🎂 Your Order</h1>
+      <p>Fill in your details</p>
+    </div>
+    <button class="back-btn" onclick="goTo('screen-menu')">← Change cake</button>
+    <div class="form-section">
+      <div>
+        <div class="field-label">Selected cake</div>
+        <div class="selected-pill" id="selected-pill">—</div>
+      </div>
+      <div>
+        <div class="field-label">How many?</div>
+        <div class="qty-row">
+          <button class="qty-btn" onclick="changeQty(-1)">−</button>
+          <span class="qty-val" id="qty-display">1</span>
+          <button class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+      <div>
+        <div class="field-label">Your name *</div>
+        <input type="text" id="cust-name" placeholder="e.g. Priya Sharma" />
+      </div>
+      <div>
+        <div class="field-label">Phone number *</div>
+        <input type="tel" id="cust-phone" placeholder="e.g. 9876543210" />
+      </div>
+      <div>
+        <div class="field-label">Delivery address *</div>
+        <textarea id="cust-addr" placeholder="House no, street, area, city..."></textarea>
+      </div>
+      <div>
+        <div class="field-label">Special note (optional)</div>
+        <input type="text" id="cust-note" placeholder="e.g. Happy Birthday written on top" />
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="sum-row"><span id="sum-item">—</span><span id="sum-price">₹0</span></div>
+      <div class="sum-row"><span>Qty</span><span id="sum-qty">1</span></div>
+      <div class="sum-row total"><span>Total</span><span id="sum-total">₹0</span></div>
+    </div>
+    <button class="footer-btn" onclick="goToPayment()">Proceed to Payment →</button>
+  </div>
+
+  <!-- SCREEN 3: PAYMENT -->
+  <div class="screen" id="screen-payment">
+    <div class="top-bar">
+      <h1>💳 Payment</h1>
+      <p>Pay securely via UPI</p>
+    </div>
+    <button class="back-btn" onclick="goTo('screen-details')">← Back</button>
+    <div class="payment-body">
+
+      <div class="pay-amount-box">
+        <div class="label">Amount to pay</div>
+        <div class="amount" id="pay-amount">₹0</div>
+        <div class="sublabel" id="pay-sublabel">—</div>
+      </div>
+
+      <!-- PhonePe direct button -->
+      <a id="phonepe-link" href="#" class="phonepe-btn" onclick="openPhonePe(event)">
+        <span class="phonepe-icon">📱</span> Pay with PhonePe
+      </a>
+
+      <!-- GPay button -->
+      <a id="gpay-link" href="#" class="gpay-btn" onclick="openGPay(event)">
+        <span style="font-size:20px;">G</span> Pay with Google Pay
+      </a>
+
+      <div class="divider">or scan QR code</div>
+
+      <!-- QR Code -->
+      <div class="qr-card">
+        <div class="qr-title">📷 Scan with any UPI app</div>
+        <div id="qrcode"></div>
+        <div class="upi-id-text">UPI ID: 9391023165@ybl</div>
+      </div>
+
+      <div class="steps-box">
+        <div class="step"><div class="step-num">1</div><span>Tap <strong>Pay with PhonePe</strong> — it opens PhonePe app directly with the amount filled in</span></div>
+        <div class="step"><div class="step-num">2</div><span>Confirm payment in PhonePe — you will get a notification</span></div>
+        <div class="step"><div class="step-num">3</div><span>Come back here and tap <strong>I have paid</strong> below</span></div>
+      </div>
+
+    </div>
+    <button class="paid-btn" onclick="confirmPayment()">✓ I have paid</button>
+  </div>
+
+  <!-- SCREEN 4: SUCCESS -->
+  <div class="screen" id="screen-success">
+    <div class="success-box">
+      <div class="success-icon">🎉</div>
+      <h2>Order Confirmed!</h2>
+      <p>Thank you for your payment!<br>We'll prepare your cake and deliver it fresh.</p>
+      <div class="order-ref" id="order-ref">Order #—</div>
+      <div class="conf-card" id="conf-details"></div>
+      <button class="new-order-btn" onclick="newOrder()">Order another cake</button>
+    </div>
+  </div>
+
+</div>
+<script>
+  // ============================================================
+  // YOUR UPI ID — money comes directly to you
+  const UPI_ID   = '9391023165@ybl';
+  const UPI_NAME = 'Sweet Home Cakes';
+  // ============================================================
+
+  // ============================================================
+  // EDIT YOUR CAKES — name, description, price, emoji
+  const cakes = [
+    { id:1, name:'Chocolate Fudge',  desc:'Rich dark chocolate with ganache',    price:450, icon:'🍫' },
+    { id:2, name:'Strawberry Dream', desc:'Fresh strawberries & whipped cream',  price:400, icon:'🍓' },
+    { id:3, name:'Vanilla Sponge',   desc:'Classic light & fluffy vanilla',      price:350, icon:'🍰' },
+    { id:4, name:'Black Forest',     desc:'Cherries, cream & chocolate layers',  price:500, icon:'🎂' },
+    { id:5, name:'Butterscotch',     desc:'Caramel crunch with fresh cream',     price:420, icon:'🧁' },
+  ];
+  // ============================================================
+
+  let selected = null, qty = 1, qrGenerated = false;
+
+  function renderMenu() {
+    document.getElementById('cake-list').innerHTML = cakes.map(c => `
+      <div class="cake-item" id="cake-${c.id}" onclick="selectCake(${c.id})">
+        <div class="cake-icon">${c.icon}</div>
+        <div class="cake-details">
+          <p class="cake-name">${c.name}</p>
+          <p class="cake-desc">${c.desc}</p>
+          <p class="cake-price">&#8377;${c.price}</p>
+        </div>
+        <div class="check" id="check-${c.id}"></div>
+      </div>`).join('');
+  }
+
+  function selectCake(id) {
+    cakes.forEach(c => {
+      document.getElementById('cake-'+c.id).classList.remove('selected');
+      const ch = document.getElementById('check-'+c.id);
+      ch.classList.remove('on'); ch.textContent = '';
+    });
+    selected = cakes.find(c => c.id === id);
+    document.getElementById('cake-'+id).classList.add('selected');
+    const ch = document.getElementById('check-'+id);
+    ch.classList.add('on'); ch.textContent = '✓';
+    document.getElementById('btn-next-1').disabled = false;
+  }
+
+  function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function changeQty(d) {
+    qty = Math.max(1, Math.min(10, qty+d));
+    document.getElementById('qty-display').textContent = qty;
+    updateSummary();
+  }
+
+  function updateSummary() {
+    if (!selected) return;
+    document.getElementById('selected-pill').textContent = selected.icon+' '+selected.name;
+    document.getElementById('sum-item').textContent = selected.name;
+    document.getElementById('sum-price').textContent = '₹'+selected.price;
+    document.getElementById('sum-qty').textContent = qty;
+    document.getElementById('sum-total').textContent = '₹'+(selected.price*qty);
+  }
+
+  function goToPayment() {
+    const name  = document.getElementById('cust-name').value.trim();
+    const phone = document.getElementById('cust-phone').value.trim();
+    const addr  = document.getElementById('cust-addr').value.trim();
+    if (!name)  { alert('Please enter your name.'); return; }
+    if (!phone) { alert('Please enter your phone number.'); return; }
+    if (!addr)  { alert('Please enter your delivery address.'); return; }
+
+    const total = selected.price * qty;
+    const note  = selected.name + ' x' + qty;
+
+    document.getElementById('pay-amount').textContent = '₹' + total;
+    document.getElementById('pay-sublabel').textContent = selected.icon + ' ' + selected.name + ' × ' + qty;
+
+    // Build UPI deep link
+    const upiParams = new URLSearchParams({
+      pa: UPI_ID,
+      pn: UPI_NAME,
+      am: total,
+      cu: 'INR',
+      tn: note
+    });
+    const upiURL = 'upi://pay?' + upiParams.toString();
+
+    // PhonePe deep link
+    document.getElementById('phonepe-link').dataset.upi = upiURL;
+
+    // GPay deep link
+    document.getElementById('gpay-link').dataset.upi = upiURL;
+
+    // Generate QR code (only once per session to avoid duplicates)
+    const qrDiv = document.getElementById('qrcode');
+    qrDiv.innerHTML = '';
+    new QRCode(qrDiv, {
+      text: upiURL,
+      width: 180,
+      height: 180,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    goTo('screen-payment');
+  }
+
+  function openPhonePe(e) {
+    e.preventDefault();
+    const upi = e.currentTarget.dataset.upi;
+    // Try PhonePe specific intent first, fallback to generic UPI
+    const phonepeIntent = upi.replace('upi://', 'phonepe://');
+    window.location.href = phonepeIntent;
+    setTimeout(() => { window.location.href = upi; }, 500);
+  }
+
+  function openGPay(e) {
+    e.preventDefault();
+    const upi = e.currentTarget.dataset.upi;
+    const gpayIntent = 'tez://upi/pay?' + upi.split('?')[1];
+    window.location.href = gpayIntent;
+    setTimeout(() => { window.location.href = upi; }, 500);
+  }
+
+  function confirmPayment() {
+    const name  = document.getElementById('cust-name').value.trim();
+    const phone = document.getElementById('cust-phone').value.trim();
+    const addr  = document.getElementById('cust-addr').value.trim();
+    const note  = document.getElementById('cust-note').value.trim();
+    const total = selected.price * qty;
+
+    const ref = 'SHC' + Date.now().toString().slice(-5);
+    document.getElementById('order-ref').textContent = 'Order #' + ref;
+
+    let d = selected.icon + ' <strong>' + selected.name + '</strong> &times; ' + qty + '<br>';
+    d += 'Amount paid: <strong>&#8377;' + total + '</strong><br>';
+    d += 'Name: ' + name + '<br>';
+    d += 'Phone: ' + phone + '<br>';
+    d += 'Address: ' + addr;
+    if (note) d += '<br>Note: ' + note;
+    document.getElementById('conf-details').innerHTML = d;
+
+    goTo('screen-success');
+  }
+
+  function newOrder() {
+    selected = null; qty = 1;
+    ['cust-name','cust-phone','cust-addr','cust-note'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('btn-next-1').disabled = true;
+    renderMenu();
+    goTo('screen-menu');
+  }
+
+  renderMenu();
+</script>
+</body>
+</html>

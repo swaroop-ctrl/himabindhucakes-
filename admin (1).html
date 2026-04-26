@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Indhu Cakes — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#060410;
+  --bg2:#0c0820;
+  --surface:rgba(255,255,255,0.04);
+  --surface2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08);
+  --border2:rgba(255,255,255,0.14);
+  --pink:#ff6eb4;
+  --pink2:#ff3d9a;
+  --violet:#a855f7;
+  --violet2:#7c3aed;
+  --gold:#fbbf24;
+  --teal:#2dd4bf;
+  --green:#10b981;
+  --orange:#f97316;
+  --blue:#60a5fa;
+  --red:#f87171;
+  --purple:#c084fc;
+  --text:#f1e8ff;
+  --muted:rgba(241,232,255,0.5);
+  --muted2:rgba(241,232,255,0.28);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* Aurora */
+.aurora{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
+.ab{position:absolute;border-radius:50%;filter:blur(90px);opacity:0.12;animation:drift 14s ease-in-out infinite alternate;}
+.ab1{width:700px;height:700px;background:radial-gradient(circle,#7c3aed,transparent);top:-200px;left:-150px;}
+.ab2{width:500px;height:500px;background:radial-gradient(circle,#ff6eb4,transparent);bottom:-100px;right:-100px;animation-delay:-6s;}
+.ab3{width:400px;height:400px;background:radial-gradient(circle,#2dd4bf,transparent);top:40%;left:40%;animation-delay:-3s;}
+@keyframes drift{0%{transform:translate(0,0);}100%{transform:translate(40px,30px);}}
+
+/* Login */
+#loginScreen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  position:relative;z-index:1;
+}
+.login-card{
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(30px);
+  border:1px solid var(--border2);
+  border-radius:28px;
+  padding:48px 40px;
+  width:100%;max-width:380px;
+  text-align:center;
+  box-shadow:0 0 80px rgba(168,85,247,0.12),0 0 0 1px rgba(255,255,255,0.04);
+  animation:scale-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes scale-in{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+.login-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px;font-weight:600;
+  background:linear-gradient(135deg,var(--pink),var(--violet),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:6px;
+}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px;}
+.login-card input{
+  width:100%;padding:13px 16px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--border2);
+  border-radius:12px;
+  font-size:14px;font-family:'Outfit',sans-serif;
+  color:var(--text);outline:none;
+  margin-bottom:12px;
+  transition:all 0.2s;
+}
+.login-card input::placeholder{color:var(--muted2);}
+.login-card input:focus{border-color:rgba(168,85,247,0.6);background:rgba(168,85,247,0.08);box-shadow:0 0 0 3px rgba(168,85,247,0.12);}
+.btn-login{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--pink2),var(--violet2));
+  color:#fff;border:none;border-radius:12px;
+  font-size:14px;font-weight:600;font-family:'Outfit',sans-serif;
+  cursor:pointer;transition:all 0.3s;
+  box-shadow:0 8px 28px rgba(255,61,154,0.35);
+  position:relative;overflow:hidden;
+}
+.btn-login::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12),transparent);opacity:0;transition:opacity 0.2s;}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(255,61,154,0.5);}
+.btn-login:hover::before{opacity:1;}
+.login-hint{font-size:11px;color:var(--muted2);margin-top:16px;}
+.login-err{font-size:12px;color:var(--red);margin-top:10px;display:none;}
+
+/* App shell */
+#appShell{display:none;min-height:100vh;position:relative;z-index:1;}
+
+/* Topbar */
+.topbar{
+  background:rgba(6,4,16,0.75);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  height:58px;display:flex;align-items:center;
+  padding:0 20px;gap:12px;
+  position:sticky;top:0;z-index:50;
+}
+.tlogo{
+  font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;
+  background:linear-gradient(135deg,var(--pink),var(--violet));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  display:flex;align-items:center;gap:6px;
+}
+.tlogo-icon{-webkit-text-fill-color:initial;font-size:18px;}
+.tbadge{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:#c084fc;}
+.tlive{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:glow-pulse 2s infinite;}
+@keyframes glow-pulse{0%,100%{opacity:1;box-shadow:0 0 8px var(--green);}50%{opacity:0.5;box-shadow:0 0 4px var(--green);}}
+.live-txt{font-size:11px;color:var(--green);font-weight:500;}
+.btn-logout{font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border2);padding:5px 14px;border-radius:8px;cursor:pointer;transition:all 0.2s;margin-left:10px;}
+.btn-logout:hover{border-color:var(--pink);color:var(--pink);}
+
+/* Glow line */
+.glow-line{height:1px;background:linear-gradient(90deg,transparent,var(--violet),var(--pink),var(--teal),transparent);opacity:0.5;}
+
+/* Stats */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px 20px 14px;max-width:1100px;margin:0 auto;}
+@media(max-width:580px){.stats-bar{grid-template-columns:repeat(2,1fr);}}
+.sc{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;padding:16px 18px;
+  position:relative;overflow:hidden;
+  transition:border-color 0.2s,transform 0.2s;
+}
+.sc:hover{border-color:var(--border2);transform:translateY(-2px);}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);}
+.sc-lbl{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.sc-val{font-size:28px;font-weight:600;line-height:1;margin-bottom:4px;}
+.sc-sub{font-size:10px;color:var(--muted2);}
+
+/* Controls */
+.controls{display:flex;gap:8px;padding:0 20px 14px;max-width:1100px;margin:0 auto;flex-wrap:wrap;align-items:center;}
+.search-box{
+  flex:1;min-width:180px;
+  padding:9px 16px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  font-size:13px;font-family:'Outfit',sans-serif;
+  color:var(--text);outline:none;
+  transition:all 0.2s;
+}
+.search-box::placeholder{color:var(--muted2);}
+.search-box:focus{border-color:rgba(168,85,247,0.5);background:rgba(168,85,247,0.06);box-shadow:0 0 0 3px rgba(168,85,247,0.1);}
+.fb{
+  padding:8px 14px;border:1px solid var(--border);border-radius:10px;
+  font-size:11px;font-weight:500;color:var(--muted);
+  background:var(--surface);cursor:pointer;transition:all 0.2s;
+}
+.fb:hover{border-color:var(--border2);color:var(--text);}
+.fb.on{border-color:rgba(255,110,180,0.5);color:var(--pink);background:rgba(255,110,180,0.08);}
+
+/* Table */
+.table-wrap{padding:0 20px 40px;max-width:1100px;margin:0 auto;}
+.table-box{
+  border-radius:18px;overflow:hidden;
+  border:1px solid var(--border);
+  box-shadow:0 0 40px rgba(168,85,247,0.06);
+}
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+th{
+  text-align:left;font-size:10px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.08em;
+  padding:12px 16px;
+  background:rgba(255,255,255,0.03);
+  border-bottom:1px solid var(--border);
+}
+td{
+  padding:14px 16px;font-size:13px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  background:transparent;vertical-align:top;
+  transition:background 0.15s;
+}
+tr:hover td{background:rgba(255,255,255,0.02);}
+tr:last-child td{border-bottom:none;}
+
+.oname{font-weight:500;font-size:14px;color:var(--text);}
+.ophone{font-size:11px;color:var(--muted);margin-top:2px;}
+.ocake{font-weight:500;font-size:13px;color:var(--text);}
+.odet{font-size:11px;color:var(--muted);margin-top:2px;}
+.omsg{font-size:11px;color:var(--muted2);font-style:italic;margin-top:2px;}
+.oaddr{font-size:11px;color:var(--muted);margin-top:2px;max-width:150px;}
+.oprice{font-size:14px;font-weight:600;background:linear-gradient(135deg,var(--gold),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* Status badges */
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:0.04em;border:1px solid;}
+.b-New{background:rgba(96,165,250,0.12);color:#93c5fd;border-color:rgba(96,165,250,0.3);}
+.b-Confirmed{background:rgba(251,191,36,0.12);color:#fcd34d;border-color:rgba(251,191,36,0.3);}
+.b-Baking{background:rgba(192,132,252,0.12);color:#d8b4fe;border-color:rgba(192,132,252,0.3);}
+.b-Ready{background:rgba(16,185,129,0.12);color:#6ee7b7;border-color:rgba(16,185,129,0.3);}
+.b-Delivered{background:rgba(45,212,191,0.12);color:#5eead4;border-color:rgba(45,212,191,0.3);}
+.b-Cancelled{background:rgba(248,113,113,0.12);color:#fca5a5;border-color:rgba(248,113,113,0.3);}
+
+.status-select{
+  border:none;background:transparent;
+  font-size:10px;font-weight:600;cursor:pointer;
+  outline:none;font-family:'Outfit',sans-serif;
+  padding:0;color:inherit;letter-spacing:0.04em;
+}
+.status-select option{background:#1a0f2e;color:var(--text);}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .icon{font-size:48px;margin-bottom:14px;}
+.loading{text-align:center;padding:48px;color:var(--muted);font-size:14px;}
+
+@media(max-width:700px){.hide-m{display:none;}.table-box{overflow-x:auto;}}
+
+/* Fade in animation for rows */
+@keyframes row-in{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:none;}}
+tbody tr{animation:row-in 0.3s ease both;}
+</style>
+</head>
+<body>
+
+<div class="aurora">
+  <div class="ab ab1"></div>
+  <div class="ab ab2"></div>
+  <div class="ab ab3"></div>
+</div>
+
+<!-- Login -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div style="font-size:36px;margin-bottom:10px;">🎂</div>
+    <div class="login-logo">Indhu Cakes</div>
+    <div class="login-sub">Admin Panel — Sign in to continue</div>
+    <input type="email" id="loginEmail" placeholder="Email address" value="indhu@cakes.com"/>
+    <input type="password" id="loginPass" placeholder="Password" value="indhu1234"/>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <div class="login-err" id="loginErr">Wrong email or password</div>
+    <div class="login-hint">Default: indhu@cakes.com / indhu1234</div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="appShell">
+  <div class="topbar">
+    <span class="tlogo"><span class="tlogo-icon">🎂</span> Indhu Cakes</span>
+    <span class="tbadge">Admin</span>
+    <div class="tlive">
+      <div class="live-dot"></div>
+      <span class="live-txt">Live</span>
+      <button class="btn-logout" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+  <div class="glow-line"></div>
+
+  <div class="stats-bar">
+    <div class="sc">
+      <div class="sc-lbl">Total orders</div>
+      <div class="sc-val" id="statTotal" style="background:linear-gradient(135deg,var(--pink),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">0</div>
+      <div class="sc-sub">All time</div>
+    </div>
+    <div class="sc">
+      <div class="sc-lbl">New orders</div>
+      <div class="sc-val" id="statNew" style="color:var(--blue);">0</div>
+      <div class="sc-sub">Needs attention</div>
+    </div>
+    <div class="sc">
+      <div class="sc-lbl">In progress</div>
+      <div class="sc-val" id="statProgress" style="color:var(--orange);">0</div>
+      <div class="sc-sub">Confirmed + Baking</div>
+    </div>
+    <div class="sc">
+      <div class="sc-lbl">Delivered</div>
+      <div class="sc-val" id="statDelivered" style="color:var(--green);">0</div>
+      <div class="sc-sub">Completed</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input class="search-box" id="searchBox" placeholder="🔍  Search by name or phone..." oninput="renderOrders()"/>
+    <button class="fb on" onclick="setFilter('All',this)">All</button>
+    <button class="fb" onclick="setFilter('New',this)">New</button>
+    <button class="fb" onclick="setFilter('Confirmed',this)">Confirmed</button>
+    <button class="fb" onclick="setFilter('Baking',this)">Baking</button>
+    <button class="fb" onclick="setFilter('Ready',this)">Ready</button>
+    <button class="fb" onclick="setFilter('Delivered',this)">Delivered</button>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-box">
+      <table>
+        <colgroup>
+          <col style="width:17%"><col style="width:20%"><col style="width:22%">
+          <col style="width:10%"><col style="width:14%"><col style="width:17%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Customer</th><th>Cake</th>
+            <th class="hide-m">Delivery</th>
+            <th class="hide-m">Price</th>
+            <th>Status</th>
+            <th class="hide-m">Ordered</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <tr><td colspan="6"><div class="loading">Connecting to Firebase...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAgVPfi8qg0G-aqDWcOXRl5xXqJasOdugY",
+  authDomain: "indhu-cakes.firebaseapp.com",
+  databaseURL: "https://indhu-cakes-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "indhu-cakes",
+  storageBucket: "indhu-cakes.firebasestorage.app",
+  messagingSenderId: "591332025321",
+  appId: "1:591332025321:web:3070b07c43612fadf3a178"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const ADMIN_EMAIL='indhu@cakes.com', ADMIN_PASS='indhu1234';
+let allOrders=[], currentFilter='All';
+
+window.doLogin = function(){
+  const e=document.getElementById('loginEmail').value;
+  const p=document.getElementById('loginPass').value;
+  if(e===ADMIN_EMAIL&&p===ADMIN_PASS){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appShell').style.display='block';
+    startListening();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+};
+window.doLogout = function(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('appShell').style.display='none';
+};
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')window.doLogin();});
+
+function startListening(){
+  onValue(ref(db,'orders'),snapshot=>{
+    allOrders=[];
+    const data=snapshot.val();
+    if(data){
+      Object.entries(data).forEach(([id,order])=>allOrders.push({id,...order}));
+      allOrders.sort((a,b)=>new Date(b.orderedAt)-new Date(a.orderedAt));
+    }
+    updateStats(); renderOrders();
+  });
+}
+
+function updateStats(){
+  document.getElementById('statTotal').textContent=allOrders.length;
+  document.getElementById('statNew').textContent=allOrders.filter(o=>o.status==='New').length;
+  document.getElementById('statProgress').textContent=allOrders.filter(o=>['Confirmed','Baking'].includes(o.status)).length;
+  document.getElementById('statDelivered').textContent=allOrders.filter(o=>o.status==='Delivered').length;
+}
+
+window.setFilter=function(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderOrders();
+};
+
+window.renderOrders=function(){
+  const search=document.getElementById('searchBox').value.toLowerCase();
+  let filtered=allOrders.filter(o=>{
+    const mf=currentFilter==='All'||o.status===currentFilter;
+    const ms=!search||o.customerName?.toLowerCase().includes(search)||o.phone?.includes(search);
+    return mf&&ms;
+  });
+  const tbody=document.getElementById('ordersBody');
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="icon">🎂</div><p>No orders found</p></div></td></tr>`;
+    return;
+  }
+  const statuses=['New','Confirmed','Baking','Ready','Delivered','Cancelled'];
+  tbody.innerHTML=filtered.map((o,i)=>{
+    const opts=statuses.map(s=>`<option value="${s}"${o.status===s?' selected':''}>${s}</option>`).join('');
+    const dateStr=o.deliveryDate?new Date(o.deliveryDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
+    const orderedStr=o.orderedAt?new Date(o.orderedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):o.orderedAtReadable||'—';
+    return `<tr style="animation-delay:${i*0.04}s">
+      <td>
+        <div class="oname">${o.customerName||'—'}</div>
+        <div class="ophone">📞 ${o.phone||'—'}</div>
+      </td>
+      <td>
+        <div class="ocake">${o.cakeType||'—'}</div>
+        <div class="odet">${o.flavour||''} · ${o.size||''}</div>
+        ${o.cakeMessage?`<div class="omsg">"${o.cakeMessage}"</div>`:''}
+      </td>
+      <td class="hide-m">
+        <div style="font-size:13px;">${dateStr}</div>
+        <div class="odet">${o.deliveryTime||''}</div>
+        <div class="oaddr">${o.address||''}</div>
+      </td>
+      <td class="hide-m"><span class="oprice">${o.estimatedPrice||'—'}</span></td>
+      <td>
+        <div class="badge b-${o.status||'New'}">
+          <select class="status-select" onchange="updateStatus('${o.id}',this.value,this)">${opts}</select>
+        </div>
+      </td>
+      <td class="hide-m" style="font-size:12px;color:var(--muted);">${orderedStr}</td>
+    </tr>`;
+  }).join('');
+};
+
+window.updateStatus=function(id,status,sel){
+  const badge=sel.closest('.badge');
+  badge.className='badge b-'+status;
+  update(ref(db,'orders/'+id),{status});
+};
+</script>
+</body>
+</html>

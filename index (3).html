@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indhu Cakes 🎂</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'DM Sans',sans-serif; background:#0f0520; color:#fff; min-height:100vh; }
+.bg-glow{ position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden; }
+.bg-glow span{ position:absolute;border-radius:50%;filter:blur(80px);opacity:.15; }
+.g1{ width:500px;height:500px;background:#7c3aed;top:-100px;left:-100px; }
+.g2{ width:400px;height:400px;background:#ff6eb4;bottom:0;right:0; }
+.g3{ width:300px;height:300px;background:#2dd4bf;top:50%;left:50%; }
+.header{ position:sticky;top:0;z-index:100;background:rgba(15,5,32,.88);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 24px; }
+.header-logo{ font-family:'Playfair Display',serif;font-size:22px;font-weight:900;background:linear-gradient(135deg,#ff9de2,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+.header-sub{ color:rgba(255,200,240,.6);font-size:12px;margin-top:2px; }
+.hero{ position:relative;z-index:1;text-align:center;padding:56px 24px 36px; }
+.hero h1{ font-family:'Playfair Display',serif;font-size:clamp(30px,6vw,50px);font-weight:900;background:linear-gradient(135deg,#ff9de2,#fff,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;margin-bottom:14px; }
+.hero p{ color:rgba(255,200,240,.7);font-size:15px;max-width:420px;margin:0 auto 22px;line-height:1.6; }
+.hero-tags{ display:flex;gap:8px;justify-content:center;flex-wrap:wrap; }
+.hero-tag{ background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 12px;font-size:12px;color:rgba(255,200,240,.8); }
+.wrap{ position:relative;z-index:1;max-width:640px;margin:0 auto;padding:0 18px 80px; }
+.card{ background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;margin-bottom:14px;padding:22px; }
+.card-title{ font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#ff9de2;margin-bottom:16px; }
+.cake-grid{ display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
+@media(max-width:400px){ .cake-grid{ grid-template-columns:repeat(2,1fr); } }
+.cake-opt{ border:2px solid rgba(255,255,255,.1);border-radius:13px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.04);user-select:none;-webkit-tap-highlight-color:transparent; }
+.cake-opt:hover{ border-color:rgba(255,110,180,.5); }
+.cake-opt.active{ border-color:#ff6eb4;background:rgba(255,110,180,.12);box-shadow:0 0 14px rgba(255,110,180,.2); }
+.cake-opt .ico{ font-size:26px;display:block;margin-bottom:5px; }
+.cake-opt .lbl{ font-size:11px;font-weight:500;color:rgba(255,220,245,.9); }
+.row{ display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+@media(max-width:480px){ .row{ grid-template-columns:1fr; } }
+.field{ margin-bottom:14px; }
+.field:last-child{ margin-bottom:0; }
+.field label{ display:block;font-size:12px;font-weight:500;color:rgba(255,200,240,.65);margin-bottom:6px; }
+.req{ color:#ff6eb4; }
+.field input,
+.field select,
+.field textarea{
+  width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  border-radius:11px;padding:12px 14px;color:#fff;font-size:14px;
+  font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s,background .2s;
+  -webkit-appearance:none;appearance:none;
+}
+.field input::placeholder,.field textarea::placeholder{ color:rgba(255,200,240,.3); }
+.field input:focus,.field select:focus,.field textarea:focus{ border-color:rgba(168,85,247,.6);background:rgba(168,85,247,.07); }
+.field textarea{ resize:vertical;min-height:76px;line-height:1.5; }
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,200,240,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;
+}
+.field select option{ background:#1a0535;color:#fff; }
+.price-box{ background:linear-gradient(135deg,rgba(255,110,180,.1),rgba(168,85,247,.1));border:1px solid rgba(255,110,180,.25);border-radius:13px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between; }
+.price-box .pl{ font-size:13px;color:rgba(255,200,240,.7); }
+.price-box .pn{ font-size:11px;color:rgba(255,200,240,.45);margin-top:3px; }
+.price-box .pv{ font-family:'Playfair Display',serif;font-size:32px;font-weight:700;background:linear-gradient(135deg,#ff9de2,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+
+/* ── SUBMIT BUTTON — clean, no tricks ── */
+#placeOrderBtn{
+  display:block;width:100%;padding:18px 24px;
+  background:linear-gradient(135deg,#ff3d9a,#7c3aed);
+  color:#fff;border:none;border-radius:14px;
+  font-size:16px;font-weight:700;font-family:'DM Sans',sans-serif;
+  cursor:pointer;letter-spacing:.3px;
+  box-shadow:0 8px 30px rgba(255,61,154,.4);
+  margin-top:8px;
+}
+#placeOrderBtn:hover{ opacity:.92; }
+#placeOrderBtn:active{ transform:scale(.97); }
+#placeOrderBtn:disabled{ background:rgba(255,255,255,.15);box-shadow:none;cursor:not-allowed; }
+.submit-note{ text-align:center;font-size:12px;color:rgba(255,200,240,.4);margin-top:10px; }
+
+/* TOAST */
+#toast{ position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-radius:14px;padding:14px 28px;font-size:14px;font-weight:600;box-shadow:0 8px 28px rgba(34,197,94,.4);transition:transform .4s cubic-bezier(.34,1.56,.64,1);z-index:9999;white-space:nowrap; }
+#toast.show{ transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="bg-glow" aria-hidden="true">
+  <span class="g1"></span><span class="g2"></span><span class="g3"></span>
+</div>
+
+<div class="header">
+  <div class="header-logo">🎂 Indhu Cakes</div>
+  <div class="header-sub">✦ Crafted with love ✦</div>
+</div>
+
+<div class="hero">
+  <h1>Order Your Dream Cake</h1>
+  <p>Freshly baked, custom-crafted cakes for every special moment. Delivered to your door.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">🌿 Fresh Ingredients</span>
+    <span class="hero-tag">✨ Custom Designs</span>
+    <span class="hero-tag">🚚 Home Delivery</span>
+    <span class="hero-tag">🥚 Eggless Available</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 1. Cake Type -->
+  <div class="card">
+    <div class="card-title">1 · Choose Cake Type</div>
+    <div class="cake-grid">
+      <div class="cake-opt active" data-val="Birthday Cake"><span class="ico">🎂</span><span class="lbl">Birthday</span></div>
+      <div class="cake-opt" data-val="Wedding Cake"><span class="ico">💍</span><span class="lbl">Wedding</span></div>
+      <div class="cake-opt" data-val="Anniversary Cake"><span class="ico">💕</span><span class="lbl">Anniversary</span></div>
+      <div class="cake-opt" data-val="Baby Shower Cake"><span class="ico">👶</span><span class="lbl">Baby Shower</span></div>
+      <div class="cake-opt" data-val="Cupcakes"><span class="ico">🧁</span><span class="lbl">Cupcakes</span></div>
+      <div class="cake-opt" data-val="Custom Cake"><span class="ico">⭐</span><span class="lbl">Custom</span></div>
+    </div>
+  </div>
+
+  <!-- 2. Flavour & Size -->
+  <div class="card">
+    <div class="card-title">2 · Flavour & Size</div>
+    <div class="row">
+      <div class="field">
+        <label>Flavour <span class="req">*</span></label>
+        <select id="flavour">
+          <option value="">Select flavour</option>
+          <option value="Chocolate">Chocolate</option>
+          <option value="Vanilla">Vanilla</option>
+          <option value="Strawberry">Strawberry</option>
+          <option value="Red Velvet">Red Velvet</option>
+          <option value="Butterscotch">Butterscotch</option>
+          <option value="Black Forest">Black Forest</option>
+          <option value="Pineapple">Pineapple</option>
+          <option value="Mixed Fruit">Mixed Fruit</option>
+          <option value="Mango">Mango</option>
+          <option value="Blueberry">Blueberry</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Size <span class="req">*</span></label>
+        <select id="size" onchange="updatePrice()">
+          <option value="">Select size</option>
+          <option value="0.5">0.5 kg — ₹350</option>
+          <option value="1">1 kg — ₹599</option>
+          <option value="1.5">1.5 kg — ₹850</option>
+          <option value="2">2 kg — ₹1,099</option>
+          <option value="3">3 kg — ₹1,599</option>
+          <option value="custom">Custom weight</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Message on Cake</label>
+      <input type="text" id="cakeMessage" placeholder="e.g. Happy Birthday Riya! 🎉" maxlength="60">
+    </div>
+    <div class="field">
+      <label>Special Instructions</label>
+      <textarea id="instructions" placeholder="Eggless? Specific design? Allergies? Tell us..."></textarea>
+    </div>
+  </div>
+
+  <!-- 3. Price -->
+  <div class="card">
+    <div class="card-title">3 · Estimated Price</div>
+    <div class="price-box">
+      <div><div class="pl">Total Estimate</div><div class="pn">Final price confirmed on call</div></div>
+      <div class="pv" id="priceDisplay">₹—</div>
+    </div>
+  </div>
+
+  <!-- 4. Delivery -->
+  <div class="card">
+    <div class="card-title">4 · Delivery Details</div>
+    <div class="row">
+      <div class="field">
+        <label>Delivery Date</label>
+        <input type="date" id="deliveryDate">
+      </div>
+      <div class="field">
+        <label>Preferred Time</label>
+        <select id="deliveryTime">
+          <option value="Any time">Any time</option>
+          <option value="Morning 9am-12pm">Morning (9am–12pm)</option>
+          <option value="Afternoon 12pm-4pm">Afternoon (12pm–4pm)</option>
+          <option value="Evening 4pm-8pm">Evening (4pm–8pm)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Delivery Address <span class="req">*</span></label>
+      <textarea id="address" placeholder="House no, Street, Area, City, Pincode..."></textarea>
+    </div>
+  </div>
+
+  <!-- 5. Your Details -->
+  <div class="card">
+    <div class="card-title">5 · Your Details</div>
+    <div class="row">
+      <div class="field">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" id="customerName" placeholder="Your name">
+      </div>
+      <div class="field">
+        <label>Phone Number <span class="req">*</span></label>
+        <input type="tel" id="phone" placeholder="10-digit mobile" maxlength="10">
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT — outside every card, no overflow:hidden parent -->
+  <button type="button" id="placeOrderBtn">🎂 Place My Order</button>
+  <p class="submit-note">We'll call you within a few hours to confirm 📞</p>
+
+</div>
+
+<div id="toast">✅ Order placed! We'll call you soon 🎂</div>
+
+<script>
+// Firebase init
+firebase.initializeApp({
+  apiKey:            "AIzaSyAgVPfi8qg0G-aqDWcOXRl5xXqJasOdugY",
+  authDomain:        "indhu-cakes.firebaseapp.com",
+  databaseURL:       "https://indhu-cakes-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "indhu-cakes",
+  storageBucket:     "indhu-cakes.firebasestorage.app",
+  messagingSenderId: "591332025321",
+  appId:             "1:591332025321:web:3070b07c43612fadf3a178"
+});
+var db = firebase.database();
+
+// Cake type picker
+var selectedCakeType = 'Birthday Cake';
+document.querySelectorAll('.cake-opt').forEach(function(el){
+  el.addEventListener('click', function(){
+    document.querySelectorAll('.cake-opt').forEach(function(x){ x.classList.remove('active'); });
+    el.classList.add('active');
+    selectedCakeType = el.getAttribute('data-val');
+  });
+});
+
+// Price updater
+var prices = {'0.5':350,'1':599,'1.5':850,'2':1099,'3':1599};
+function updatePrice(){
+  var s = document.getElementById('size').value;
+  document.getElementById('priceDisplay').textContent =
+    prices[s] ? '₹'+prices[s] : (s === 'custom' ? 'Custom' : '₹—');
+}
+
+// Min delivery date = tomorrow
+var tom = new Date();
+tom.setDate(tom.getDate() + 1);
+document.getElementById('deliveryDate').min = tom.toISOString().split('T')[0];
+
+// Place Order button
+document.getElementById('placeOrderBtn').addEventListener('click', function(){
+  var name    = document.getElementById('customerName').value.trim();
+  var phone   = document.getElementById('phone').value.trim();
+  var flavour = document.getElementById('flavour').value;
+  var size    = document.getElementById('size').value;
+  var address = document.getElementById('address').value.trim();
+
+  if(!name)   { alert('⚠️ Please enter your Full Name');       document.getElementById('customerName').focus(); return; }
+  if(!phone)  { alert('⚠️ Please enter your Phone Number');    document.getElementById('phone').focus();        return; }
+  if(phone.replace(/\D/g,'').length < 10){ alert('⚠️ Phone must be 10 digits'); document.getElementById('phone').focus(); return; }
+  if(!flavour){ alert('⚠️ Please select a Flavour');           document.getElementById('flavour').focus();     return; }
+  if(!size)   { alert('⚠️ Please select a Size');              document.getElementById('size').focus();        return; }
+  if(!address){ alert('⚠️ Please enter your Delivery Address');document.getElementById('address').focus();     return; }
+
+  var btn = document.getElementById('placeOrderBtn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Placing your order...';
+
+  var order = {
+    customerName:      name,
+    phone:             phone,
+    cakeType:          selectedCakeType,
+    flavour:           flavour,
+    size:              size + ' kg',
+    cakeMessage:       document.getElementById('cakeMessage').value.trim(),
+    instructions:      document.getElementById('instructions').value.trim(),
+    deliveryDate:      document.getElementById('deliveryDate').value || 'To be confirmed',
+    deliveryTime:      document.getElementById('deliveryTime').value || 'Any time',
+    address:           address,
+    estimatedPrice:    prices[size] ? '₹'+prices[size] : 'Custom',
+    status:            'New',
+    orderedAt:         new Date().toISOString(),
+    orderedAtReadable: new Date().toLocaleString('en-IN')
+  };
+
+  db.ref('orders').push(order)
+    .then(function(){
+      btn.textContent = '✅ Order Placed!';
+      var t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(function(){ t.classList.remove('show'); }, 4000);
+      setTimeout(function(){
+        btn.disabled    = false;
+        btn.textContent = '🎂 Place My Order';
+        ['customerName','phone','address','cakeMessage','instructions','deliveryDate'].forEach(function(id){
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('flavour').value = '';
+        document.getElementById('size').value    = '';
+        document.getElementById('priceDisplay').textContent = '₹—';
+        document.querySelectorAll('.cake-opt').forEach(function(x){ x.classList.remove('active'); });
+        document.querySelector('.cake-opt').classList.add('active');
+        selectedCakeType = 'Birthday Cake';
+      }, 2500);
+    })
+    .catch(function(err){
+      btn.disabled    = false;
+      btn.textContent = '🎂 Place My Order';
+      alert('❌ Could not save. Check internet and try again.\n\n' + err.message);
+    });
+});
+</script>
+</body>
+</html>
